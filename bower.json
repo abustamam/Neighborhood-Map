@@ -1,0 +1,23 @@
+{
+  "name": "neighborhood",
+  "version": "0.0.0",
+  "authors": [
+    "Rasheed Bustamam <rasheed.bustamam@gmail.com>"
+  ],
+  "description": "Neighborhood map",
+  "main": "index.html",
+  "keywords": [
+    "neighborhood"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockout": "~3.3.0"
+  }
+}
