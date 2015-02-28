@@ -1,0 +1,28 @@
+* {box-sizing:border-box;}
+body {background-color: #CCC;}
+
+img, #catarea{
+    display: block;
+    margin: 0 auto;
+}
+
+.catlist {
+  margin-top: 90px;
+}
+
+h2, h3, #admin-panel, #clicks {
+  width: 100%;
+  text-align: center;
+}
+
+#nicknames {
+  text-align: left;
+}
+
+h1{
+    text-align: center;
+}
+
+.hidden {
+  display: none;
+}
