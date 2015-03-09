@@ -53,7 +53,7 @@ var ViewModel = function() {
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
         self.map = new google.maps.Map(document.getElementById('mapDiv'), mapOptions);
-        self.info = new google.maps.InfoWindow();
+        self.infoWindow = new google.maps.InfoWindow();
         self.markLocation();
         self.getVenues();
     };
@@ -75,12 +75,12 @@ var ViewModel = function() {
             title: placeData.name
         });
 
-        google.maps.event.addListener(marker, 'click', (function(marker, map, infoWindow) {
-            return function() {
-                infoWindow.setContent(marker.title + "is here");
-                infoWindow.open(map, marker);
-            }
-        })(marker, self.map, self.infoWindow));
+        // google.maps.event.addListener(marker, 'click', (function(marker, map, infoWindow) {
+        //     return function() {
+        //         infoWindow.setContent(marker.title + "is here");
+        //         infoWindow.open(map, marker);
+        //     }
+        // })(marker, self.map, self.infoWindow));
 
         self.mapMarkers().push(marker);
     }
@@ -89,7 +89,7 @@ var ViewModel = function() {
     self.getVenues = function() {
         $.ajax({
             type: "get",
-            url: "https://api.foursquare.com/v2/venues/search?ll=" + lat() + "," + lng() + "&client_id=" + id + "&client_secret=" + secret + "&v=20150217&query=food",
+            url: "https://api.foursquare.com/v2/venues/search?ll=" + lat() + "," + lng() + "&client_id=" + id + "&client_secret=" + secret + "&v=20150217&query=food&radius=10000",
             // test url: https://api.foursquare.com/v2/venues/search?ll=38.538232,-121.761712&client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&v=20150217&query=food
             success: function(data) {
                 self.venues(data.response.venues);
@@ -102,13 +102,14 @@ var ViewModel = function() {
                     rating = this.rating ? "<span>" + this.rating + "</span>" : "";
                     var dataHTML = "<div class='venue'><h2><span>" + this.name + category + rating + "</span></h2>" + address + phone + "</p></div>";
                     var marker = new google.maps.Marker({
-                        position: new  google.maps.LatLng(this.location.lat, this.location.lng),
+                        position: new google.maps.LatLng(this.location.lat, this.location.lng),
                         title: this.name,
                         map: self.map
                     });
                     google.maps.event.addListener(marker, 'click', function() {
+                        console.log(self.infoWindow);
                         self.infoWindow.setContent(dataHTML);
-                        self.infoWindow.open(self.map, marker);
+                        self.infoWindow.open(self.map);
                     });
 
                     self.markerList.push({
