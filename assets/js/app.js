@@ -11,7 +11,7 @@ var ViewModel = function() {
         self.getVenues();
 
         $('.menu-icon-link').on('click', function() {
-            $('.menu').toggleClass('menu-hidden');
+            $('.menu').toggle("slow");
         });
     };
 
@@ -33,7 +33,7 @@ var ViewModel = function() {
                     rating = this.rating ? "<span>" + this.rating + "</span>" : "";
                     dataHTML += "<div class='venue'><h2><span>" + this.name + category + rating + "</span></h2>" + address + phone + "</p></div>";
                 });
-                $(".venue-list").html(dataHTML);
+                $(".menu").html(dataHTML);
             }
         });
     };

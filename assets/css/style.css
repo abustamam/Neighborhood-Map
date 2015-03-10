@@ -4,15 +4,14 @@ html, body, #mapDiv {
   padding: 0;
 }
 
-.venue-list {
+.menu {
   position: absolute;
   top: 3.5em;
   padding: 1em;
   background: #4caf50;
   height: 100%;
   width: 20em;
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.2s;
+  overflow-y: scroll;
 }
 
 .glyphicon-list {
@@ -27,9 +26,4 @@ header {
     top: 0;
     width: 100%;
     padding: 0.5em 1em;
-}
-
-.menu-hidden .menu {
-    transform: translate3d(-12em, 0, 0);
-    transition: transform 0.2s;
 }
