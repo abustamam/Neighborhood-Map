@@ -1,15 +1,25 @@
-html, body, #mapDiv { 
+html, body{ 
   height: 100%; 
   margin: 0; 
   padding: 0;
 }
 
+body {
+  position: relative; 
+  padding: 3.5em 0 0 0; 
+  box-sizing: border-box;
+}
+
+.menu-container {
+  display: block;
+}
+
 .menu {
-  position: absolute;
+  position: fixed;
   top: 3.5em;
+  bottom: 0;
   padding: 1em;
   background: #A9E2AD;
-  height: 100%;
   overflow-y: scroll;
 }
 
@@ -25,4 +35,5 @@ header {
     top: 0;
     width: 100%;
     padding: 0.5em 1em;
+    display: block;
 }
