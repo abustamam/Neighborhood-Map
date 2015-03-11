@@ -31,7 +31,7 @@ var ViewModel = function() {
                     category = this.categories[0] ? this.categories[0].name : "";
                     address = this.location.address ? "<p>" + this.location.address + "</p>" : "";
                     rating = this.rating ? "<span>" + this.rating + "</span>" : "";
-                    dataHTML += "<div class='venue'><h2><span>" + this.name + category + rating + "</span></h2>" + address + phone + "</p></div>";
+                    dataHTML += "<div class='venue'><h3><span>" + this.name + " " + category + " " + rating + "</span></h2>" + address + phone + "</p></div>";
                 });
                 $(".menu").html(dataHTML);
             }
