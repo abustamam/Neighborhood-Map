@@ -32,11 +32,32 @@ var ViewModel = function() {
                     phone = venue.contact.formattedPhone ? "Phone: " + venue.contact.formattedPhone : "";
                     category = venue.categories[0] ? venue.categories[0].name : "";
                     address = venue.location.address ? "<p>" + venue.location.address + "</p>" : "";
-                    rating = venue.rating ? "<span>" + venue.rating + "</span>" : "";
-                    dataHTML += "<div class='venue'><b><span>" + venue.name + " " + category + " " + rating + "</span></b>" + address + phone + "</p></div>";
+                    rating = venue.rating ? "<span class='stars'>" + venue.rating + "</span>" : "";
+                    dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</p></div>";
                 });
                 $(".menu").html(dataHTML);
+                self.getStars();
             }
+        });
+    };
+
+    self.getStars = function() {
+        $.fn.stars = function() {
+            return $(this).each(function() {
+                // Get the value
+                var val = parseFloat($(this).html());
+                val = Math.round(val * 4) / 8;
+                // Make sure that the value is in 0 - 5 range, multiply to get width
+                var size = Math.max(0, (Math.min(5, val))) * 16;
+                // Create stars holder
+                var $span = $('<span />').width(size);
+                // Replace the numerical value with stars
+                $(this).html($span);
+            });
+        }
+
+        $(function() {
+            $('span.stars').stars();
         });
     };
 

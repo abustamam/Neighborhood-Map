@@ -37,3 +37,18 @@ header {
     padding: 0.5em 1em;
     display: block;
 }
+
+/* Star styling from Stack Overflow question
+ * http://stackoverflow.com/questions/1987524/turn-a-number-into-star-rating-display-using-jquery-and-css
+ */
+
+span.stars, span.stars span {
+    display: block;
+    background: url('/assets/img/stars.png') 0 -16px repeat-x;
+    width: 80px;
+    height: 16px;
+}
+
+span.stars span {
+    background-position: 0 0;
+}
