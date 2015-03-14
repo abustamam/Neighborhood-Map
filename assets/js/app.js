@@ -1,15 +1,13 @@
 var ViewModel = function() {
     var self = this;
-    var fssid = "MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU";
-    var fssecret = "CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1";
-    var yid = "";
+    var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
     var lat = ko.observable(38.538232);
     var lng = ko.observable(-121.761712);
 
     self.venues = ko.observableArray([]);
 
     self.init = function() {
-        self.getVenues();
+        self.getDeals();
 
         $('.menu-icon-link').on('click', function() {
             $('.menu').toggle("slow");
@@ -17,25 +15,58 @@ var ViewModel = function() {
     };
 
     self.getVenues = function() {
-        var urlPre = "https://api.foursquare.com/v2/venues/explore?ll="
+        var urlPre = "https://api.foursquare.com/v2/venues/explore?client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&ll="
         $.ajax({
             type: "get",
-            url: urlPre + lat() + "," + lng() + "&client_id=" + fssid + "&client_secret=" + fssecret + "&v=20150217&",
+            url: urlPre + lat() + "," + lng() + "&v=20150217&",
             // test url: https://api.foursquare.com/v2/venues/search?ll=38.538232,-121.761712&client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&v=20150217&query=food
             success: function(data) {
-                var dataHTML = "";
+                
                 self.venues(data.response.groups[0].items);
 
                 $.each(self.venues(), function() {
                     var phone, category, address, rating,
                         venue = this.venue;
+                    var dataHTML = "";
                     phone = venue.contact.formattedPhone ? "Phone: " + venue.contact.formattedPhone : "";
                     category = venue.categories[0] ? venue.categories[0].name : "";
                     address = venue.location.address ? "<p>" + venue.location.address + "</p>" : "";
                     rating = venue.rating ? "<span class='stars'>" + venue.rating + "</span>" : "";
-                    dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</p></div>";
+                    dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</div>";
+                    $(".menu").append(dataHTML);
                 });
-                $(".menu").html(dataHTML);
+                self.getStars();
+            }
+        });
+    };
+
+    self.getDeals = function() {
+        var urlPre = "https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0";
+        $.ajax({
+            type: "get",
+            url: urlPre + "&offset=0&limit=25&filters=category:food-and-drink",
+            dataType: 'jsonp',
+            // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=25&filters=category:food-and-drink
+            success: function(data) {
+                self.venues(data.deals);
+
+                $.each(self.venues(), function() {
+                    var name, phone, category, address, rating, price, dataHTML, redemptionLocations;
+                    dataHTML = "";
+                    if (this.options[0].redemptionLocations === undefined || this.options[0].redemptionLocations.length == 0) {
+                        return true;
+                    } else {
+                        redemptionLocations = this.options[0].redemptionLocations;
+                    }
+                    name = this.merchant.name;
+                    address = redemptionLocations.length > 0 ? "<p>" + this.options[0].redemptionLocations[0].streetAddress1 + "</p>" : "";
+                    phone = redemptionLocations.length > 0 ? "Phone: " + this.options[0].redemptionLocations[0].phoneNumber : "";
+                    price = this.options[0].price.formattedAmount ? "<p>Price: " + this.options[0].price.formattedAmount + "</p>" : "";
+
+                    rating = this.rating ? "<span class='stars'>" + this.rating + "</span>" : "";
+                    dataHTML += "<div class='venue'><b>" + name + " " + rating + "</b>" + address + phone + price + "</div>"
+                    $(".menu").append(dataHTML);
+                });
                 self.getStars();
             }
         });
