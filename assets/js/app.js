@@ -28,22 +28,18 @@ var ViewModel = function() {
     var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
     var lat = ko.observable(38.538232);
     var lng = ko.observable(-121.761712);
-    var auto = {};
-
+    var auto = {}
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
     self.picks = ko.observableArray(self.venues());
-    self.neighborhood = ko.observable("Sacramento")
+    self.neighborhood = ko.observable("Sacramento");
 
     self.grpnPlaceList = ko.observableArray([]);
 
     self.init = function() {
         //self.initMap();
-        self.getDeals();
-
         self.getComplete();
        
-
         $('.menu-icon-link').on('click', function() {
             $('.menu').toggle("slow");
         });
@@ -56,12 +52,24 @@ var ViewModel = function() {
             url: "https://partner-api.groupon.com/division.json",
             success: function(data) {
                 $.each(data.divisions, function() {
-                    auto[this.name] = this.id
+                    auto[this.name] = this.id;
                 });
 
+                self.formattedNeighborhood = ko.computed(function() {
+                    return auto[self.neighborhood()];
+                })
+
                 $("#neigh").autocomplete({
-                    source: Object.keys(auto)
+                    source: Object.keys(auto),
+                    select: function( event, ui ){
+                        self.neighborhood(ui.item.label);
+                        self.getDeals();
+                    }
                 });
+
+                console.log(auto[self.neighborhood()])
+
+                self.getDeals();
             }
         });
 
@@ -89,23 +97,28 @@ var ViewModel = function() {
                     //$(".menu").append(dataHTML);
                 });
                 self.getStars();
-                console.log(self.venues())
             }
         });
     };
 
     self.getNeighborhood = function() {
-        self.getDeals();
         console.log(self.neighborhood())
+        self.formattedNeighborhood = ko.computed(function(){
+            return auto[self.neighborhood()];
+        })
+        self.getDeals();
     }
 
     self.getDeals = function() {
         var urlPre = "https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0";
-        self.grpnPlaceList.removeAll()
+        self.grpnPlaceList.removeAll();
+        self.formattedNeighborhood = ko.computed(function() {
+            return auto[self.neighborhood()];
+        })
 
         $.ajax({
             type: "get",
-            url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink&division_id=" + self.neighborhood(),
+            url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink&division_id=" + self.formattedNeighborhood(),
             dataType: 'jsonp',
             // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=10&filters=category:food-and-drink&division_id=sacramento
             success: function(data) {
@@ -120,7 +133,6 @@ var ViewModel = function() {
                         self.grpnPlaceList.push( new GrpnPlace(this));
                     }
                 });
-                console.log(self.grpnPlaceList()[0].address());
                 self.getStars();
             }
         });
