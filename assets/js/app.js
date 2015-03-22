@@ -1,17 +1,70 @@
+var MapMarker = function(name, marker, location) {
+    this.name = name;
+    this.marker = marker;
+    this.location = location;
+}
+
+var GrpnPlace = function(data) {
+    this.name = ko.observable(data.merchant.name);
+    this.location = ko.observable(data.options[0].redemptionLocations[0]);
+    this.lat = ko.observable(this.location().lat);
+    this.lng = ko.observable(this.location().lng);
+    this.loc = new google.maps.LatLng(this.lat(),this.lng());
+    this.neighborhood = ko.observable(this.location().neighborhood);
+    this.address = ko.observable(this.location().streetAddress1);
+    this.city = ko.observable(this.location().city);
+    this.postal = ko.observable(this.location().postal);
+    this.phone = ko.observable(this.location().phoneNumber);
+    this.rating = ko.observable(data.grouponRating);
+    this.grpnUrl = ko.observable(data.dealUrl)
+
+
+
+}
+
 var ViewModel = function() {
     var self = this;
+    var map, infowindow;
     var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
     var lat = ko.observable(38.538232);
     var lng = ko.observable(-121.761712);
+    var auto = {};
 
+    self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
+    self.picks = ko.observableArray(self.venues());
+    self.neighborhood = ko.observable("Sacramento")
+
+    self.grpnPlaceList = ko.observableArray([]);
 
     self.init = function() {
+        //self.initMap();
         self.getDeals();
+
+        self.getComplete();
+       
 
         $('.menu-icon-link').on('click', function() {
             $('.menu').toggle("slow");
         });
+    };
+
+    self.getComplete = function() {
+        $.ajax({
+            type: "get",
+            dataType: "jsonp",
+            url: "https://partner-api.groupon.com/division.json",
+            success: function(data) {
+                $.each(data.divisions, function() {
+                    auto[this.name] = this.id
+                });
+
+                $("#neigh").autocomplete({
+                    source: Object.keys(auto)
+                });
+            }
+        });
+
     };
 
     self.getVenues = function() {
@@ -31,42 +84,43 @@ var ViewModel = function() {
                     phone = venue.contact.formattedPhone ? "Phone: " + venue.contact.formattedPhone : "";
                     category = venue.categories[0] ? venue.categories[0].name : "";
                     address = venue.location.address ? "<p>" + venue.location.address + "</p>" : "";
-                    rating = venue.rating ? "<span class='stars'>" + venue.rating + "</span>" : "";
-                    dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</div>";
-                    $(".menu").append(dataHTML);
+                    rating = venue.rating ? venue.rating : "";
+                    //dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</div>";
+                    //$(".menu").append(dataHTML);
                 });
                 self.getStars();
+                console.log(self.venues())
             }
         });
     };
 
+    self.getNeighborhood = function() {
+        self.getDeals();
+        console.log(self.neighborhood())
+    }
+
     self.getDeals = function() {
         var urlPre = "https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0";
+        self.grpnPlaceList.removeAll()
+
         $.ajax({
             type: "get",
-            url: urlPre + "&offset=0&limit=25&filters=category:food-and-drink",
+            url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink&division_id=" + self.neighborhood(),
             dataType: 'jsonp',
-            // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=25&filters=category:food-and-drink
+            // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=10&filters=category:food-and-drink&division_id=sacramento
             success: function(data) {
                 self.venues(data.deals);
 
-                $.each(self.venues(), function() {
-                    var name, phone, category, address, rating, price, dataHTML, redemptionLocations;
+                $.each(data.deals, function() {
                     dataHTML = "";
                     if (this.options[0].redemptionLocations === undefined || this.options[0].redemptionLocations.length == 0) {
+                        // This will skip any "delivery" groupons w/o an address
                         return true;
                     } else {
-                        redemptionLocations = this.options[0].redemptionLocations;
+                        self.grpnPlaceList.push( new GrpnPlace(this));
                     }
-                    name = this.merchant.name;
-                    address = redemptionLocations.length > 0 ? "<p>" + this.options[0].redemptionLocations[0].streetAddress1 + "</p>" : "";
-                    phone = redemptionLocations.length > 0 ? "Phone: " + this.options[0].redemptionLocations[0].phoneNumber : "";
-                    price = this.options[0].price.formattedAmount ? "<p>Price: " + this.options[0].price.formattedAmount + "</p>" : "";
-
-                    rating = this.rating ? "<span class='stars'>" + this.rating + "</span>" : "";
-                    dataHTML += "<div class='venue'><b>" + name + " " + rating + "</b>" + address + phone + price + "</div>"
-                    $(".menu").append(dataHTML);
                 });
+                console.log(self.grpnPlaceList()[0].address());
                 self.getStars();
             }
         });
@@ -92,7 +146,79 @@ var ViewModel = function() {
         });
     };
 
+    self.initMap = function() {
+        var mapOptions = {
+            zoom: 14,
+            disableDefaultUI: true
+        }
+
+        $("#mapDiv").height($(window).height());
+
+        map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
+        infowindow = new google.maps.InfoWindow();
+    }
+
     self.init();
+
+    // self.createMarker = function(venue) {
+    //     var name = venue.merchant.name;
+    //     var location = venue.options[0].redemptionLocations[0];
+    //     var lat = location.lat;
+    //     var lng = location.lng;
+    //     var loc = new google.maps.LatLng(lat, lng);
+    //     var neighborhood = location.neighborhood;
+    //     var address = location.streetAddress1;
+    //     var city = location.city;
+    //     var postal = location.postal;
+    //     var phone = location.phoneNumber;
+    //     var rating = venue.rating;
+
+    //     var marker = new google.maps.Marker({
+    //         map: map,
+    //         position: loc,
+    //         title: name
+    //     });
+
+    //     self.markers.push(new MapMarker(name, marker, location));
+
+    //     var infowinDiv = $("<div />", {
+    //         "class": 'infowindow'
+    //     });
+    //     var infowinName = $("<p />", {
+    //         text: name
+    //     });
+    //     var infowinAddress = $("<p />", {
+    //         text: address
+    //     });
+    //     var infowinContact = $("<p />", {
+    //         text: phone
+    //     });
+
+    //     var infowinUrl = $("<a />", {
+    //         "href": "www.google.com",
+    //         text: "cool"
+    //     });
+
+        //console.log(venue)
+    // };
+
+    self.getNeighborhoodInfo = function() {
+
+    };
+
+    self.cb = function(res, stat) {
+        if (status == google.maps.places.PlacesServiceStatus.OK) {
+            getNeighborhoodInfo(res[0]);
+        }
+    }
+
+    // self.getNeighborhood = function(neighborhood) {
+    //     var requesr = {
+    //         query: neighborhood
+    //     };
+    //     var service = new google.maps.places.PlacesService(map);
+    //     service.textSearch(request, cb);
+    // }
 };
 
 
@@ -229,4 +355,6 @@ var ViewModel = function() {
 
 // }
 
-ko.applyBindings(new ViewModel());
+$(document).ready(function(){
+   ko.applyBindings(new ViewModel()); 
+});
