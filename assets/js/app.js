@@ -9,16 +9,14 @@ var GrpnPlace = function(data) {
     this.location = ko.observable(data.options[0].redemptionLocations[0]);
     this.lat = ko.observable(this.location().lat);
     this.lng = ko.observable(this.location().lng);
-    this.loc = new google.maps.LatLng(this.lat(),this.lng());
+    //this.loc = new google.maps.LatLng(this.lat(),this.lng());
     this.neighborhood = ko.observable(this.location().neighborhood);
     this.address = ko.observable(this.location().streetAddress1);
     this.city = ko.observable(this.location().city);
     this.postal = ko.observable(this.location().postal);
     this.phone = ko.observable(this.location().phoneNumber);
     this.rating = ko.observable(data.grouponRating);
-    this.grpnUrl = ko.observable(data.dealUrl)
-
-
+    this.grpnUrl = ko.observable(data.dealUrl);
 
 }
 
@@ -32,16 +30,18 @@ var ViewModel = function() {
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
     self.picks = ko.observableArray(self.venues());
-    self.neighborhood = ko.observable("Sacramento");
+    self.neighborhood = ko.observable("");
 
     self.grpnPlaceList = ko.observableArray([]);
 
     self.init = function() {
-        //self.initMap();
         self.getComplete();
+        // self.initMap();
        
-        $('.menu-icon-link').on('click', function() {
-            $('.menu').toggle("slow");
+        $('.menu-icon-link').click(function(event) {
+            event.preventDefault();
+            console.log('clicked!');
+            $('#wrapper').toggleClass("toggled");
         });
     };
 
@@ -62,79 +62,71 @@ var ViewModel = function() {
                 $("#neigh").autocomplete({
                     source: Object.keys(auto),
                     select: function( event, ui ){
+                        $("#grpnHeaderElem").text("Loading deals");
                         self.neighborhood(ui.item.label);
                         self.getDeals();
                     }
                 });
 
-                console.log(auto[self.neighborhood()])
+                console.log(self.neighborhood())
 
                 self.getDeals();
+            },
+            error: function(xhr, status, err) {
+                $("#loading").hide();
+                console.log(err);
             }
+        }).fail(function(xhr,status,err){
+            $("#loading").hide();
+            console.log(err);
         });
 
-    };
-
-    self.getVenues = function() {
-        var urlPre = "https://api.foursquare.com/v2/venues/explore?client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&ll="
-        $.ajax({
-            type: "get",
-            url: urlPre + lat() + "," + lng() + "&v=20150217&",
-            // test url: https://api.foursquare.com/v2/venues/search?ll=38.538232,-121.761712&client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&v=20150217&query=food
-            success: function(data) {
-                
-                self.venues(data.response.groups[0].items);
-
-                $.each(self.venues(), function() {
-                    var phone, category, address, rating,
-                        venue = this.venue;
-                    var dataHTML = "";
-                    phone = venue.contact.formattedPhone ? "Phone: " + venue.contact.formattedPhone : "";
-                    category = venue.categories[0] ? venue.categories[0].name : "";
-                    address = venue.location.address ? "<p>" + venue.location.address + "</p>" : "";
-                    rating = venue.rating ? venue.rating : "";
-                    //dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</div>";
-                    //$(".menu").append(dataHTML);
-                });
-                self.getStars();
-            }
-        });
     };
 
     self.getNeighborhood = function() {
-        console.log(self.neighborhood())
-        self.formattedNeighborhood = ko.computed(function(){
-            return auto[self.neighborhood()];
-        })
         self.getDeals();
     }
 
     self.getDeals = function() {
         var urlPre = "https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0";
         self.grpnPlaceList.removeAll();
-        self.formattedNeighborhood = ko.computed(function() {
-            return auto[self.neighborhood()];
-        })
+
+        self.formattedNeighborhood = ko.computed(function(){
+            if (self.neighborhood() === "") {
+                return ""
+            } else {
+                return "&division_id=" + auto[self.neighborhood()];    
+            }
+        }, self)
+
+        $("#loading").show();
 
         $.ajax({
             type: "get",
-            url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink&division_id=" + self.formattedNeighborhood(),
+            url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink" + self.formattedNeighborhood(),
             dataType: 'jsonp',
+            async: true,
             // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=10&filters=category:food-and-drink&division_id=sacramento
-            success: function(data) {
-                self.venues(data.deals);
-
-                $.each(data.deals, function() {
-                    dataHTML = "";
-                    if (this.options[0].redemptionLocations === undefined || this.options[0].redemptionLocations.length == 0) {
-                        // This will skip any "delivery" groupons w/o an address
-                        return true;
-                    } else {
-                        self.grpnPlaceList.push( new GrpnPlace(this));
-                    }
-                });
-                self.getStars();
-            }
+            timeout: 5000
+        }).done(function(data){
+            $("#loading").hide();
+            $.each(data.deals, function() {
+                dataHTML = "";
+                if (this.options[0].redemptionLocations === undefined || this.options[0].redemptionLocations.length == 0) {
+                    // This will skip any "delivery" groupons w/o an address
+                    return true;
+                } else {
+                    self.grpnPlaceList.push( new GrpnPlace(this));
+                }
+            });
+            console.log(self.grpnPlaceList())
+            self.neighborhood(self.grpnPlaceList()[0].city());
+            self.getStars();
+            $("#grpnHeaderElem").text("Showing deals for " + self.neighborhood());
+        }).fail(function(xhr, status, err){
+            $("#grpnHeaderElem").text('Unable to load deals.');
+        }).always(function(){
+            $("#loading").hide();
         });
     };
 
@@ -162,15 +154,50 @@ var ViewModel = function() {
         var mapOptions = {
             zoom: 14,
             disableDefaultUI: true
-        }
+        };
 
         $("#mapDiv").height($(window).height());
 
         map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
         infowindow = new google.maps.InfoWindow();
+
+        $.each(self.grpnPlaceList(), function() {
+            var marker = new google.maps.Marker({
+                position: this.loc(),
+                map: map,
+                title: this.name()
+            })
+        })
+
     }
 
     self.init();
+
+    // self.getVenues = function() {
+    //     var urlPre = "https://api.foursquare.com/v2/venues/explore?client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&ll="
+    //     $.ajax({
+    //         type: "get",
+    //         url: urlPre + lat() + "," + lng() + "&v=20150217&",
+    //         // test url: https://api.foursquare.com/v2/venues/search?ll=38.538232,-121.761712&client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&v=20150217&query=food
+    //         success: function(data) {
+                
+    //             self.venues(data.response.groups[0].items);
+
+    //             $.each(self.venues(), function() {
+    //                 var phone, category, address, rating,
+    //                     venue = this.venue;
+    //                 var dataHTML = "";
+    //                 phone = venue.contact.formattedPhone ? "Phone: " + venue.contact.formattedPhone : "";
+    //                 category = venue.categories[0] ? venue.categories[0].name : "";
+    //                 address = venue.location.address ? "<p>" + venue.location.address + "</p>" : "";
+    //                 rating = venue.rating ? venue.rating : "";
+    //                 //dataHTML += "<div class='venue'><b>" + venue.name + " " + category + " " + rating + "</b>" + address + phone + "</div>";
+    //                 //$(".menu").append(dataHTML);
+    //             });
+    //             self.getStars();
+    //         }
+    //     });
+    // };
 
     // self.createMarker = function(venue) {
     //     var name = venue.merchant.name;

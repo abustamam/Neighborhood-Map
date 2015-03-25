@@ -4,25 +4,6 @@ html, body{
   padding: 0;
 }
 
-body {
-  position: relative; 
-  padding: 3.5em 0 0 0; 
-  box-sizing: border-box;
-}
-
-.menu-container {
-  display: block;
-}
-
-.menu {
-  position: fixed;
-  top: 3.5em;
-  bottom: 0;
-  padding: 1em;
-  background: #A9E2AD;
-  overflow-y: scroll;
-}
-
 .glyphicon-list {
     font-size: 1.5em;
     color: #FFF;
@@ -36,6 +17,10 @@ header {
     width: 100%;
     padding: 0.5em 1em;
     display: block;
+}
+
+#page-content-wrapper {
+  top: 3.5em;
 }
 
 /* Star styling from Stack Overflow question
