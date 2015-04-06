@@ -9,12 +9,20 @@ html, body{
     color: #FFF;
 } 
 
-#mapDiv, #page-content-wrapper {
+#mapDiv {
   position: fixed;
-  left: 115px;
-  right: 0;
+  /*left: -15px;
+  right: 0;*/
   height: 100%;
-  
+}
+
+#page-content-wrapper {
+  position: fixed;
+  top: 3.5em;
+  bottom: 0;
+  left: 300px;
+  right: 0;
+  /*height: 100%;*/
 }
 
 #grpnHeaderElem {
@@ -37,10 +45,6 @@ html, body{
   padding: 0 .5em 0 .5em;
   margin-left: -15px;
   border: 0;
-}
-
-#page-content-wrapper {
-  top: 3.5em;
 }
 
 @media(max-width:767px) {
