@@ -109,7 +109,7 @@
     background: none;
 }
 
-@media(min-width:768px) {
+/*@media(min-width:768px) {*/
     #wrapper {
         padding-left: 300px;
     }
@@ -131,8 +131,8 @@
         position: relative;
     }
 
-    #wrapper.toggled #page-content-wrapper {
-        /*position: relative;
+    /*#wrapper.toggled #page-content-wrapper {
+        position: relative;
         margin-right: 0;
-    }
-}
+    }*/
+/*}*/
