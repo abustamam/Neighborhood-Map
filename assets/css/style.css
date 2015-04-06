@@ -9,7 +9,19 @@ html, body{
     color: #FFF;
 } 
 
-header {
+#mapDiv, #page-content-wrapper {
+  position: fixed;
+  left: 115px;
+  right: 0;
+  height: 100%;
+  
+}
+
+#grpnHeaderElem {
+  text-align: center;
+}
+
+.navbar {
     background: #50af4c;
     color: #fff;
     position: fixed;
@@ -19,8 +31,42 @@ header {
     display: block;
 }
 
+.navbar-default .navbar-brand {
+  background: #50af4c;
+  color: #fff;
+  padding: 0 .5em 0 .5em;
+  margin-left: -15px;
+  border: 0;
+}
+
 #page-content-wrapper {
   top: 3.5em;
+}
+
+@media(max-width:767px) {
+    .navbar .navbar-form {
+        width: 80%;
+        padding-left:15px;
+        padding-right:15px;
+    }
+}
+@media(min-width:768px) {
+    .navbar .navbar-form {
+        width: 250px;
+    }
+}
+.navbar .navbar-form {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-right: 0;
+    margin-left: 0;
+    border: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.sidebar-nav li {
+  padding-left: 20px;
 }
 
 /* Star styling from Stack Overflow question

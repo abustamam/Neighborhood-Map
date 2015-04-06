@@ -4,12 +4,12 @@ var MapMarker = function(name, marker, location) {
     this.location = location;
 }
 
-var GrpnPlace = function(data) {
+var GrpnPlace = function(data, map, infowindow) {
     this.name = ko.observable(data.merchant.name);
     this.location = ko.observable(data.options[0].redemptionLocations[0]);
     this.lat = ko.observable(this.location().lat);
     this.lng = ko.observable(this.location().lng);
-    //this.loc = new google.maps.LatLng(this.lat(),this.lng());
+    this.loc = ko.observable(new google.maps.LatLng(this.lat(),this.lng()));
     this.neighborhood = ko.observable(this.location().neighborhood);
     this.address = ko.observable(this.location().streetAddress1);
     this.city = ko.observable(this.location().city);
@@ -18,15 +18,44 @@ var GrpnPlace = function(data) {
     this.rating = ko.observable(data.grouponRating);
     this.grpnUrl = ko.observable(data.dealUrl);
 
+    // this.marker = new google.maps.Marker({
+    //     position: this.loc(),
+    //     map: map,
+    //     title: this.name()
+    // });
+
+    // google.maps.event.addListener(this.marker, "click", function(){
+    //     self.infoWindow.setContent(this.name());
+    //     self.infoWindow.open(map, this);
+    // })
+
+    //self.createMarker(this.name(), this.loc());
+
+    this.marker = new google.maps.Marker({
+        position: this.loc(),
+        map: map,
+    });
+
+    google.maps.event.addListener(this.marker, "click", (function(marker, content, infowindow) {
+        return function(){
+            console.log(content);
+            infowindow.setContent(content);
+            map.setCenter(marker.getPosition());
+            infowindow.open(map, marker);
+        }
+    })(this.marker, this.name(), infowindow));
+
 }
 
 var ViewModel = function() {
     var self = this;
-    var map, infowindow;
     var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
     var lat = ko.observable(38.538232);
     var lng = ko.observable(-121.761712);
     var auto = {}
+    var marker;
+    //var map;
+    var infoWindow;
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
     self.picks = ko.observableArray(self.venues());
@@ -35,13 +64,14 @@ var ViewModel = function() {
     self.grpnPlaceList = ko.observableArray([]);
 
     self.init = function() {
+        self.initMap();
         self.getComplete();
-        // self.initMap();
        
         $('.menu-icon-link').click(function(event) {
             event.preventDefault();
-            console.log('clicked!');
             $('#wrapper').toggleClass("toggled");
+            $("#sidebar-wrapper").toggleClass("toggled");
+            $("#page-content-wrapper").toggleClass("toggled");
         });
     };
 
@@ -68,8 +98,6 @@ var ViewModel = function() {
                     }
                 });
 
-                console.log(self.neighborhood())
-
                 self.getDeals();
             },
             error: function(xhr, status, err) {
@@ -83,9 +111,9 @@ var ViewModel = function() {
 
     };
 
-    self.getNeighborhood = function() {
-        self.getDeals();
-    }
+    // self.getNeighborhood = function() {
+    //     self.getDeals();
+    // }
 
     self.getDeals = function() {
         var urlPre = "https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0";
@@ -105,7 +133,6 @@ var ViewModel = function() {
             type: "get",
             url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink" + self.formattedNeighborhood(),
             dataType: 'jsonp',
-            async: true,
             // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=10&filters=category:food-and-drink&division_id=sacramento
             timeout: 5000
         }).done(function(data){
@@ -116,11 +143,13 @@ var ViewModel = function() {
                     // This will skip any "delivery" groupons w/o an address
                     return true;
                 } else {
-                    self.grpnPlaceList.push( new GrpnPlace(this));
+                    self.grpnPlaceList.push( new GrpnPlace(this, self.map, infowindow));
                 }
             });
             console.log(self.grpnPlaceList())
-            self.neighborhood(self.grpnPlaceList()[0].city());
+            if (self.neighborhood() === "") {
+                self.neighborhood(self.grpnPlaceList()[0].city());
+            }
             self.getStars();
             $("#grpnHeaderElem").text("Showing deals for " + self.neighborhood());
         }).fail(function(xhr, status, err){
@@ -152,25 +181,48 @@ var ViewModel = function() {
 
     self.initMap = function() {
         var mapOptions = {
-            zoom: 14,
-            disableDefaultUI: true
+            zoom: 10,
+            disableDefaultUI: false,
+            center: new google.maps.LatLng(lat(), lng()),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
         };
+        // self.mapHeight = ko.computed(function(){
+        //     $("#mapDiv").height($(window).height()-100);
+        // }, self);
 
-        $("#mapDiv").height($(window).height());
-
-        map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
+        self.map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
         infowindow = new google.maps.InfoWindow();
 
-        $.each(self.grpnPlaceList(), function() {
-            var marker = new google.maps.Marker({
-                position: this.loc(),
-                map: map,
-                title: this.name()
-            })
-        })
+        // $.each(self.grpnPlaceList(), function(){
+        //     var marker = new google.maps.Marker({
+        //         position: this.loc(),
+        //         map: self.map,
+        //         title: this.name()
+        //     })
+        // })
 
+        // $.each(self.grpnPlaceList(), function(){
+        //     self.createMarker(this);
+        // })
     }
 
+    self.createMarker = function(place) {
+        marker = new google.maps.Marker({
+            position: place.loc(),
+            map: self.map,
+            title: place.name()
+        });
+        self.createInfoWindow(place, marker);
+    }
+
+    self.createInfoWindow = function(place, marker){
+        google.maps.event.addListener(marker, 'click', (function(place, marker){
+            return function() {
+                infoWindow.setContent(place.name())
+                infoWindow.open(map, marker);    
+            }
+        })(place, marker));
+    }
     self.init();
 
     // self.getVenues = function() {

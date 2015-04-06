@@ -11,3 +11,5 @@
 [Stack Overflow](http://stackoverflow.com/questions/1987524/turn-a-number-into-star-rating-display-using-jquery-and-css) for star styling
 [Auto-Complete Plugin](https://www.devbridge.com/sourcery/components/jquery-autocomplete/)
 [Start Bootstrap Sidebar](http://startbootstrap.com/template-overviews/simple-sidebar/)
+[Search Navbar](http://www.mentful.com/2014/06/22/fixed-search-navbar-with-bootstrap-3-0/)
+[Additional GMAPS tutorial](http://www.w3schools.com/googleapi/google_maps_events.asp)
