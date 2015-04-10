@@ -1,5 +1,12 @@
 # Neighborhood-Map
 
+## version 0.1
+
+### Features
+
+-Search for Groupons in a specific area
+-Click on markers to center and see groupon URL
+
 ## Resources
 
 [Google Maps API](https://developers.google.com/maps/documentation/javascript/tutorial)
@@ -13,3 +20,5 @@
 [Start Bootstrap Sidebar](http://startbootstrap.com/template-overviews/simple-sidebar/)
 [Search Navbar](http://www.mentful.com/2014/06/22/fixed-search-navbar-with-bootstrap-3-0/)
 [Additional GMAPS tutorial](http://www.w3schools.com/googleapi/google_maps_events.asp)
+[Google maps div resize](http://stackoverflow.com/questions/9458215/google-maps-not-working-in-jquery-tabs)
+
