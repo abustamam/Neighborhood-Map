@@ -34,24 +34,6 @@ var GrpnPlace = function(data, map, infowindow) {
     }
 }
 
-var Marker = function(place, map, infowindow){
-    this.name = place.name();
-    var marker = new google.maps.Marker({
-        position: place.loc(),
-        map: map
-    });
-
-    google.maps.event.addListener(marker, "click", (function(marker, content, infowindow) {
-        return function(){
-            infowindow.setContent(content);
-            map.panTo(marker.getPosition());
-            infowindow.open(map, marker);
-        }
-    })(marker, place.content, infowindow));
-
-
-}
-
 var ViewModel = function() {
     var self = this;
     var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
@@ -67,26 +49,6 @@ var ViewModel = function() {
 
     self.grpnPlaceList = ko.observableArray([]);
     self.filter = ko.observable();
-
-    // filtered list for search
-    self.filteredList = ko.computed(function(){
-        if (!self.filter()) {
-            return self.grpnPlaceList;
-        } else {
-            var places = [];
-            ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
-                if (place.name().toLowerCase().indexOf(self.filter().toLowerCase()) >= 0) {
-                    places.push(place);
-                }
-            });
-            return ko.observableArray(places);
-            // return ko.utils.arrayFilter(self.grpnPlaceList(), function(place){
-            //     return place.name().toLowerCase().indexOf(self.filter().toLowerCase()) >= 0;
-            // });
-        }
-    }, this);
-
-
 
     // self.markerList = ko.computed(function(){
     //     var markers = [];
@@ -108,9 +70,31 @@ var ViewModel = function() {
 
     // })
 
-    self.displayMarkers = ko.computed(function(){
+    // filtered list for search
+    self.filteredList = ko.computed(function(){
+        if (!self.filter()) {
+            ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
+                place.marker.setMap(self.map);
+            });
+            //self.getStars();
+            return self.grpnPlaceList();
 
-    })
+        } else {
+            var places = [];
+
+            ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
+                // clear all markers
+                place.marker.setMap(null);
+                if (place.name().toLowerCase().indexOf(self.filter().toLowerCase()) >= 0) {
+                    places.push(place);
+                    // show only markers that are filtered
+                    place.marker.setMap(self.map);
+                }
+            });
+            //self.getStars();
+            return places;
+        }
+    }, this);
 
     self.init = function() {
         self.initMap();
@@ -159,9 +143,6 @@ var ViewModel = function() {
                 $("#loading").hide();
                 console.log(err);
             }
-        }).fail(function(xhr,status,err){
-            $("#loading").hide();
-            console.log(err);
         });
 
     };
