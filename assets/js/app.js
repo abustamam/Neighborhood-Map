@@ -50,32 +50,13 @@ var ViewModel = function() {
     self.grpnPlaceList = ko.observableArray([]);
     self.filter = ko.observable();
 
-    // self.markerList = ko.computed(function(){
-    //     var markers = [];
-    //     ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
-    //         markers.push(place.marker);
-    //     });
-    //     return markers;
-    // }, this);
-
-    // self.filteredMarkerList = ko.computed(function(){
-
-    //     ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
-    //         if (self.filteredList.indexOf(place) === -1 ) {
-    //             place.marker.setMap(null);
-    //         } else {
-    //             place.marker.setMap(self.map);
-    //         }
-    //     })
-
-    // })
-
     // filtered list for search
     self.filteredList = ko.computed(function(){
         if (!self.filter()) {
             ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
                 place.marker.setMap(self.map);
             });
+            // TODO: ensure that 'get stars' works when filtering
             //self.getStars();
             return self.grpnPlaceList();
 
@@ -107,6 +88,8 @@ var ViewModel = function() {
             $("#page-content-wrapper").toggleClass("toggled");
 
             var center = self.map.getCenter();
+
+            // resize map when menu is triggered
             setTimeout(function(){
                 google.maps.event.trigger(self.map, 'resize');
                 //self.map.panTo(center);
