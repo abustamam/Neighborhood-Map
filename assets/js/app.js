@@ -1,4 +1,4 @@
-var GrpnPlace = function(data, map, infowindow) {
+var GrpnPlace = function(data, self) {
     this.name = ko.observable(data.merchant.name);
     this.location = ko.observable(data.options[0].redemptionLocations[0]);
     this.lat = ko.observable(this.location().lat);
@@ -18,18 +18,19 @@ var GrpnPlace = function(data, map, infowindow) {
 
     this.marker = new google.maps.Marker({
         position: this.loc(),
-        map: map
+        map: self.map
     });
 
     google.maps.event.addListener(this.marker, "click", (function(marker, content, infowindow) {
         return function(){
             infowindow.setContent(content);
-            map.panTo(marker.getPosition());
-            infowindow.open(map, marker);
+            self.map.panTo(marker.getPosition());
+            infowindow.open(self.map, marker);
         }
-    })(this.marker, this.content, infowindow));
+    })(this.marker, this.content, self.infowindow));
 
     this.onClick = function(){
+        $(".menu-icon-link").trigger('click');
         google.maps.event.trigger(this.marker, 'click')
     }
 }
@@ -41,11 +42,12 @@ var ViewModel = function() {
     var lng = ko.observable(-121.761712);
     var auto = {}
     var marker;
-    var infoWindow;
+    self.infoWindow;
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
     self.picks = ko.observableArray(self.venues());
     self.neighborhood = ko.observable("");
+    self.center;
 
     self.grpnPlaceList = ko.observableArray([]);
     self.filter = ko.observable();
@@ -88,14 +90,28 @@ var ViewModel = function() {
             $("#page-content-wrapper").toggleClass("toggled");
 
             var center = self.map.getCenter();
+        });
 
-            // resize map when menu is triggered
-            setTimeout(function(){
-                google.maps.event.trigger(self.map, 'resize');
-                //self.map.panTo(center);
-            }, 501);
+        // Resize map and maintain center
+        google.maps.event.addDomListener(self.map, 'idle', function() {
+          self.calculateCenter();
+        });
+        google.maps.event.addDomListener(window, 'resize', function() {
+          self.map.setCenter(self.center);
         });
     };
+
+    self.initMap = function() {
+        var mapOptions = {
+            zoom: 10,
+            disableDefaultUI: false,
+            center: new google.maps.LatLng(lat(), lng()),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        self.map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
+        self.infowindow = new google.maps.InfoWindow();
+    }
 
     self.getComplete = function() {
         $.ajax({
@@ -162,7 +178,7 @@ var ViewModel = function() {
                     // This will skip any "delivery" groupons w/o an address
                     return true;
                 } else {
-                    self.grpnPlaceList.push( new GrpnPlace(this, self.map, infowindow));
+                    self.grpnPlaceList.push( new GrpnPlace(this, self));
 
                     // Extend bounds for each location
                     bounds.extend(new google.maps.LatLng(redLoc[0].lat, redLoc[0].lng));
@@ -203,24 +219,11 @@ var ViewModel = function() {
         });
     };
 
-    self.initMap = function() {
-        var mapOptions = {
-            zoom: 10,
-            disableDefaultUI: false,
-            center: new google.maps.LatLng(lat(), lng()),
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-
-        self.map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
-        infowindow = new google.maps.InfoWindow();
-        //google.maps.event.trigger(self.map, 'resize');
-
-        // google.maps.event.addListenerOnce(self.map, 'idle', function(){
-        //     $(window).resize();
-        //     //self.map.setCenter(self.map.getCenter());
-        // });
-
+    self.calculateCenter = function() {
+        self.center = self.map.getCenter();
     }
+
+    self.init();
 
     // self.addMarker = function(place) {
     //     var marker = new google.maps.Marker({
@@ -239,9 +242,6 @@ var ViewModel = function() {
     //     self.markerList.push(marker);
     // }
 
-
-
-    self.init();
 
     // self.getVenues = function() {
     //     var urlPre = "https://api.foursquare.com/v2/venues/explore?client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&ll="

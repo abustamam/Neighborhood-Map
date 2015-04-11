@@ -21,4 +21,5 @@
 [Search Navbar](http://www.mentful.com/2014/06/22/fixed-search-navbar-with-bootstrap-3-0/)
 [Additional GMAPS tutorial](http://www.w3schools.com/googleapi/google_maps_events.asp)
 [Google maps div resize](http://stackoverflow.com/questions/9458215/google-maps-not-working-in-jquery-tabs)
+[Continuous centering of map](http://stackoverflow.com/questions/8792676/center-google-maps-v3-on-browser-resize-responsive)
 
