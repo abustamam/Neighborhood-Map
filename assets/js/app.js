@@ -121,8 +121,9 @@ var ViewModel = function() {
 
     self.initMap = function() {
 
-        if (google === undefined) {
-            $("#mapDiv").html("<h1>There was an error loading Google Maps</h1>");
+        if (typeof google == 'undefined') {
+            $("#mapDiv").html("<h1>There was an error loading Google Maps</h1><h1>Please check your internet or firewall</h1>");
+            return
         }
 
         var mapOptions = {
