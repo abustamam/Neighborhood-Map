@@ -1,0 +1,36 @@
+{
+  "name": "Neighborhood-Map",
+  "description": "Neighborhood Map",
+  "homepage": "https://github.com/abustamam/Neighborhood-Map",
+  "author": {
+    "name": "Rasheed Bustamam",
+    "email": "rasheed.bustamam@gmail.com",
+    "url": "http://abustamam.github.io/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/abustamam/Neighborhood-Map"
+  },
+  "contributors": [],
+  "version": "0.0.1",
+  "main": "gulpfile.js",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "devDependencies": {
+    "critical": "^0.5.6",
+    "del": "^1.1.1",
+    "gulp": "^3.8.11",
+    "gulp-csslint": "^0.1.5",
+    "gulp-gh-pages": "^0.5.0",
+    "gulp-htmlhint": "^0.1.1",
+    "gulp-htmlmin": "^1.1.1",
+    "gulp-jshint": "^1.10.0",
+    "gulp-minify-css": "^1.0.0",
+    "gulp-notify": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.2.0",
+    "gulp-util": "^3.0.2",
+    "gulp-webp": "^2.2.0"
+  }
+}

@@ -3,7 +3,15 @@ Neighborhood-Map
 
 ## How to use
 
-Open up `index.html` in your favorite browser.
+In order to deploy, you can run `gulp deploy` which will automatically minify and 
+
+Open up `index.html` in Chrome (Firefox is not compatible due to usage of webp). 
+
+If Groupon is in your area, the app should automatically detect your location. If not, simply type in a major metropolitan area (e.g. San Francisco) in the search box at the top. 
+
+Once the list is populated with locations, you can now search within locations at the top of the menu (you may need to click on the menu button on the top-left corner).
+
+Have fun saving money!
 
 ## version 0.1
 
@@ -18,6 +26,7 @@ Open up `index.html` in your favorite browser.
 -Fix the rating-to-star feature when filtering locations
 -Add all groupons (not just food and drink), and ability to filter between categories
 -Add other services (living social, foursquare, etc)
+-Optimize gulpfile (e.g., compiling all css into one css file)
 
 ## Resources
 
