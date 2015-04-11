@@ -21,6 +21,8 @@ var GrpnPlace = function(data, self) {
         map: self.map
     });
 
+    self.markers.push(this.marker);
+
     google.maps.event.addListener(this.marker, "click", (function(marker, content, infowindow) {
         return function(){
             infowindow.setContent(content);
@@ -38,10 +40,7 @@ var GrpnPlace = function(data, self) {
 var ViewModel = function() {
     var self = this;
     var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
-    var lat = ko.observable(38.538232);
-    var lng = ko.observable(-121.761712);
     var auto = {}
-    var marker;
     self.infoWindow;
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
@@ -52,22 +51,41 @@ var ViewModel = function() {
     self.grpnPlaceList = ko.observableArray([]);
     self.filter = ko.observable();
 
+    // Sets the map on all markers in the array.
+    self.setAllMap = function(map) {
+        ko.utils.arrayForEach(self.markers(), function(marker){
+            marker.setMap(map);
+        });
+    };
+
+    // Removes the markers from the map, but keeps them in the array.
+    self.clearMarkers = function(){
+        self.setAllMap(null);
+    };
+
+    // Shows any markers currently in the array.
+    self.showMarkers = function() {
+        self.setAllMap(self.map);
+    };
+
+    // Deletes all markers in the array by removing references to them.
+    self.deleteMarkers = function() {
+        self.clearMarkers();
+        self.markers.removeAll();
+    };
+
     // filtered list for search
     self.filteredList = ko.computed(function(){
         if (!self.filter()) {
-            ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
-                place.marker.setMap(self.map);
-            });
+            self.showMarkers();
             // TODO: ensure that 'get stars' works when filtering
             //self.getStars();
             return self.grpnPlaceList();
 
         } else {
             var places = [];
-
+            self.clearMarkers();
             ko.utils.arrayForEach(self.grpnPlaceList(), function(place){
-                // clear all markers
-                place.marker.setMap(null);
                 if (place.name().toLowerCase().indexOf(self.filter().toLowerCase()) >= 0) {
                     places.push(place);
                     // show only markers that are filtered
@@ -102,10 +120,14 @@ var ViewModel = function() {
     };
 
     self.initMap = function() {
+
+        if (google === undefined) {
+            $("#mapDiv").html("<h1>There was an error loading Google Maps</h1>");
+        }
+
         var mapOptions = {
             zoom: 10,
             disableDefaultUI: false,
-            center: new google.maps.LatLng(lat(), lng()),
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
@@ -149,6 +171,7 @@ var ViewModel = function() {
     self.getDeals = function() {
         var urlPre = "https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0";
         self.grpnPlaceList.removeAll();
+        self.deleteMarkers();
 
         self.formattedNeighborhood = ko.computed(function(){
             if (self.neighborhood() === "") {
@@ -163,7 +186,7 @@ var ViewModel = function() {
 
         $.ajax({
             type: "get",
-            url: urlPre + "&offset=0&limit=10&filters=category:food-and-drink" + self.formattedNeighborhood(),
+            url: urlPre + "&offset=0&limit=20&filters=category:food-and-drink" + self.formattedNeighborhood(),
             dataType: 'jsonp',
             // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=10&filters=category:food-and-drink&division_id=sacramento
             timeout: 5000
@@ -199,6 +222,7 @@ var ViewModel = function() {
         });
     };
 
+
     self.getStars = function() {
         $.fn.stars = function() {
             return $(this).each(function() {
@@ -219,29 +243,12 @@ var ViewModel = function() {
         });
     };
 
+    // Aux function for calculating center
     self.calculateCenter = function() {
         self.center = self.map.getCenter();
-    }
+    };
 
     self.init();
-
-    // self.addMarker = function(place) {
-    //     var marker = new google.maps.Marker({
-    //         position: place.loc(),
-    //         map: map
-    //     });
-
-    //     google.maps.event.addListener(marker, "click", (function(marker, content, infowindow) {
-    //         return function(){
-    //             infowindow.setContent(content);
-    //             map.panTo(marker.getPosition());
-    //             infowindow.open(map, marker);
-    //         }
-    //     })(marker, place.content, infowindow));
-
-    //     self.markerList.push(marker);
-    // }
-
 
     // self.getVenues = function() {
     //     var urlPre = "https://api.foursquare.com/v2/venues/explore?client_id=MG5AI4G2VTZ04J4EVB4QTXZRBA55KXQNE14ESESTXQPK23TU&client_secret=CXAQRGU5TPCRXLGN4AHRTALO42OCSVEGPJBGKMF5U1CDOAL1&ll="
