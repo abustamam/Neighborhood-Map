@@ -12,7 +12,7 @@ var GrpnPlace = function(data, self) {
     this.rating = ko.observable(data.grouponRating);
     this.grpnUrl = ko.observable(data.dealUrl);
 
-    this.content =  "<a href=" + this.grpnUrl() + "><h3>" + this.name() + "</h3></a>" + 
+    this.content =  "<a href=" + this.grpnUrl() + " target='_blank'><h3>" + this.name() + "</h3></a>" + 
                     "<p>" + this.address() + "</p>" +
                     "<p>" + this.phone() + "</p>"
 
