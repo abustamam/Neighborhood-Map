@@ -14,7 +14,7 @@ var GrpnPlace = function(data, self) {
 
     this.content =  "<a href=" + this.grpnUrl() + " target='_blank'><h3>" + this.name() + "</h3></a>" + 
                     "<p>" + this.address() + "</p>" +
-                    "<p>" + this.phone() + "</p>"
+                    "<p>" + this.phone() + "</p>";
 
     this.marker = new google.maps.Marker({
         position: this.loc(),
@@ -28,25 +28,22 @@ var GrpnPlace = function(data, self) {
             infowindow.setContent(content);
             self.map.panTo(marker.getPosition());
             infowindow.open(self.map, marker);
-        }
+        };
     })(this.marker, this.content, self.infowindow));
 
     this.onClick = function(){
         $(".menu-icon-link").trigger('click');
-        google.maps.event.trigger(this.marker, 'click')
-    }
-}
+        google.maps.event.trigger(this.marker, 'click');
+    };
+};
 
 var ViewModel = function() {
     var self = this;
-    var gpn_api = "6a9c8bea8dea2420ee2bda9fffaa761a86c7ba9e";
-    var auto = {}
-    self.infoWindow;
+    var auto = {};
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
     self.picks = ko.observableArray(self.venues());
     self.neighborhood = ko.observable("");
-    self.center;
 
     self.grpnPlaceList = ko.observableArray([]);
     self.filter = ko.observable();
@@ -106,8 +103,6 @@ var ViewModel = function() {
             $('#wrapper').toggleClass("toggled");
             $("#sidebar-wrapper").toggleClass("toggled");
             $("#page-content-wrapper").toggleClass("toggled");
-
-            var center = self.map.getCenter();
         });
 
         // Resize map and maintain center
@@ -123,7 +118,7 @@ var ViewModel = function() {
 
         if (typeof google == 'undefined') {
             $("#mapDiv").html("<h1>There was an error loading Google Maps</h1><h1>Please check your internet or firewall</h1>");
-            return
+            return;
         }
 
         var mapOptions = {
@@ -134,7 +129,7 @@ var ViewModel = function() {
 
         self.map = new google.maps.Map(document.querySelector("#mapDiv"), mapOptions);
         self.infowindow = new google.maps.InfoWindow();
-    }
+    };
 
     self.getComplete = function() {
         $.ajax({
@@ -148,7 +143,7 @@ var ViewModel = function() {
 
                 self.formattedNeighborhood = ko.computed(function() {
                     return auto[self.neighborhood()];
-                })
+                });
 
                 $("#neigh").autocomplete({
                     source: Object.keys(auto),
@@ -176,11 +171,11 @@ var ViewModel = function() {
 
         self.formattedNeighborhood = ko.computed(function(){
             if (self.neighborhood() === "") {
-                return ""
+                return "";
             } else {
                 return "&division_id=" + auto[self.neighborhood()];    
             }
-        }, self)
+        }, self);
 
         $("#loading").show();
         $("#filter").hide();
@@ -198,7 +193,7 @@ var ViewModel = function() {
             $.each(data.deals, function() {
                 dataHTML = "";
                 var redLoc = this.options[0].redemptionLocations;
-                if (redLoc === undefined || redLoc.length == 0) {
+                if (redLoc === undefined || redLoc.length === 0) {
                     // This will skip any "delivery" groupons w/o an address
                     return true;
                 } else {
@@ -237,7 +232,7 @@ var ViewModel = function() {
                 // Replace the numerical value with stars
                 $(this).html($span);
             });
-        }
+        };
 
         $(function() {
             $('span.stars').stars();

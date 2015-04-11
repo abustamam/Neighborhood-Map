@@ -1,4 +1,9 @@
-# Neighborhood-Map
+Neighborhood-Map
+================
+
+## How to use
+
+Open up `index.html` in your favorite browser.
 
 ## version 0.1
 
