@@ -35,7 +35,7 @@ var GrpnPlace = function(data, self) {
         $(".menu-icon-link").trigger('click');
         google.maps.event.trigger(this.marker, 'click');
     };
-};
+}; 
 
 var ViewModel = function() {
     var self = this;
@@ -43,7 +43,11 @@ var ViewModel = function() {
     self.markers = ko.observableArray([]);
     self.venues = ko.observableArray([]);
     self.picks = ko.observableArray(self.venues());
-    self.neighborhood = ko.observable("");
+    self.neighborhood = ko.observable("San Francisco");
+    self.dealType = ko.observable("food-and-drink");
+
+    self.channels = ko.observableArray(['automotive', 'beauty-and-spas','food-and-drink',
+        'health-and-fitness','home-improvement','local-services','shopping','things-to-do']);
 
     self.grpnPlaceList = ko.observableArray([]);
     self.filter = ko.observable();
@@ -112,6 +116,9 @@ var ViewModel = function() {
         google.maps.event.addDomListener(window, 'resize', function() {
           self.map.setCenter(self.center);
         });
+        self.dealType.subscribe(function(val){
+            self.getDeals();
+        });
     };
 
     self.initMap = function() {
@@ -170,11 +177,7 @@ var ViewModel = function() {
         self.deleteMarkers();
 
         self.formattedNeighborhood = ko.computed(function(){
-            if (self.neighborhood() === "") {
-                return "";
-            } else {
-                return "&division_id=" + auto[self.neighborhood()];    
-            }
+            return "&division_id=" + auto[self.neighborhood()];    
         }, self);
 
         $("#loading").show();
@@ -182,7 +185,7 @@ var ViewModel = function() {
 
         $.ajax({
             type: "get",
-            url: urlPre + "&offset=0&limit=20&filters=category:food-and-drink" + self.formattedNeighborhood(),
+            url: urlPre + "&offset=0&limit=20&filters=category:" + self.dealType() + self.formattedNeighborhood(),
             dataType: 'jsonp',
             // test url: https://partner-api.groupon.com/deals.json?tsToken=US_AFF_0_203765_212556_0&offset=0&limit=10&filters=category:food-and-drink&division_id=sacramento
             timeout: 5000
@@ -206,10 +209,10 @@ var ViewModel = function() {
             self.map.fitBounds(bounds);
             self.map.setCenter(bounds.getCenter());
             if (self.neighborhood() === "") {
-                self.neighborhood("you");
+                self.neighborhood("San Francisco");
             }
             //console.log(self.markerList());
-            self.getStars();
+            // self.getStars();
             $("#grpnHeaderElem").text("Showing deals near " + self.neighborhood());
         }).fail(function(xhr, status, err){
             $("#grpnHeaderElem").text('Unable to load deals.');
