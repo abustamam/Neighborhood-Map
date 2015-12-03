@@ -25,8 +25,8 @@ Have fun saving money!
 
 ### Features
 
--Search for Groupons in a specific area
--Click on markers to center and see groupon URL
+- Search for Groupons in a specific area
+- Click on markers to center and see groupon URL
 
 ## To do
 
