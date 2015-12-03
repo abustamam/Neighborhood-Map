@@ -32,7 +32,7 @@ Have fun saving money!
 
 - Add more info about the groupon (price, discounts, etc)
 - Fix the rating-to-star feature when filtering locations
-~- Add all groupons (not just food and drink), and ability to filter between categories~
+- ~~Add all groupons (not just food and drink), and ability to filter between categories~~
 - Add other services (living social, foursquare, etc)
 - Optimize gulpfile (e.g., compiling all css into one css file)
 
