@@ -15,7 +15,9 @@ Open up `index.html` in Chrome (Firefox is not compatible due to usage of webp).
 
 Click [here](http://abustamam.github.io/Neighborhood-Map) in order to open the app. Remember to use Chrome.
 
-If Groupon is in your area, the app should automatically detect your location. If not, simply type in a major metropolitan area (e.g. San Francisco) in the search box at the top. 
+~~If Groupon is in your area, the app should automatically detect your location. If not, simply type in a major metropolitan area (e.g. San Francisco) in the search box at the top. ~~
+
+The location defaults to San Francisco, but you can use any major metropolitan area.
 
 Once the list is populated with locations, you can now search within locations at the top of the menu (you may need to click on the menu button on the top-left corner).
 
