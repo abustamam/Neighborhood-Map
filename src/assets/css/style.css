@@ -17,8 +17,11 @@ html, body{
   position: fixed;
   height: 100%;
   width: 100%;
-  text-align: center;
   z-index: 1;
+}
+
+#mapDiv h3 {
+  text-align: center;
 }
 
 #page-content-wrapper {
@@ -81,6 +84,7 @@ html, body{
 
 .sidebar-nav li {
   padding-left: 20px;
+  padding-right: 20px;
 }
 
 /* Star styling from Stack Overflow question

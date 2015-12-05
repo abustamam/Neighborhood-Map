@@ -50,15 +50,11 @@
       <h4 id="grpnHeaderElem"></h4>
       <input id="filter" type="text" class="form-control" placeholder="Filter results by name" style="display: none" data-bind="textInput: filter">
       <ul class="sidebar-nav" data-bind="foreach: filteredList">
-        <li data-bind="click: onClick">
-
-          <p><b data-bind="text: name"></b></p>
-          <span data-bind="text: rating, visible: rating" class="stars"></span>
-          <p data-bind="text: address"></p>
-          <p data-bind="text: phone"></p>
-
-        </li>
         <hr>
+        <li data-bind="click: onClick">
+          <p><b data-bind="text: title"></b></p>
+          <span data-bind="text: rating, visible: rating" class="stars"></span>
+        </li>
       </ul>
     </div>
     <div id="page-content-wrapper" class="toggled">

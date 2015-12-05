@@ -1,21 +1,37 @@
-var gulp = require('gulp'),
-  deploy = require('gulp-gh-pages'),
-  htmlhint = require('gulp-htmlhint'),
-  csslint = require('gulp-csslint'),
-  jshint = require('gulp-jshint'),
-  htmlmin = require('gulp-htmlmin'),
-  cssmin = require('gulp-minify-css'),
-  uglify = require('gulp-uglify'),
-  webp = require('gulp-webp'),
-  del = require('del'),
-  notify = require('gulp-notify'),
-  critical = require('critical'),
-  rename = require('gulp-rename');
+/*eslint-env node */
+
+var gulp = require('gulp');
+var deploy = require('gulp-gh-pages');
+var htmlhint = require('gulp-htmlhint');
+var csslint = require('gulp-csslint');
+var htmlmin = require('gulp-htmlmin');
+var cssmin = require('gulp-minify-css');
+var uglify = require('gulp-uglify');
+var webp = require('gulp-webp');
+var del = require('del');
+var notify = require('gulp-notify');
+var rename = require('gulp-rename');
+var browserSync = require('browser-sync').create();
+var eslint = require('gulp-eslint');
+var concat = require('gulp-concat');
+var sass = require('gulp-sass');
+var sourcemaps = require('gulp-sourcemaps');
+var autoprefixer = require('gulp-autoprefixer');
 
 // Default task
-gulp.task('default', ['clean'], function() {
-  gulp.start('htmlmin', 'cssmin', 'uglify', 'imagemin');
+gulp.task('default', ['htmlmin', 'cssmin', 'uglify', 'imagemin', 'browserSync'], function() {
+  //gulp.start('htmlmin', 'cssmin', 'uglify', 'imagemin');
+  gulp.watch('src/assets/css/**/*.css', ['cssmin']);
+  gulp.watch('src/assets/js/**/*.js', ['uglify']);
+  gulp.watch('src/index.html', ['htmlmin']);
+  gulp.watch('./build/index.html').on('change', browserSync.reload);
 });
+
+gulp.task('browserSync', function() {
+  browserSync.init({
+    server: './build'
+  });
+})
 
 // Lint HTML
 gulp.task('htmlLint', function() {
@@ -26,7 +42,7 @@ gulp.task('htmlLint', function() {
 // Lint CSS
 
 gulp.task('cssLint', function() {
-  return gulp.src(['src/assets/css/*.css', '!src/css/*.min.css'])
+  return gulp.src(['src/assets/css/*.css', '!src/assets/css/*.min.css'])
     .pipe(csslint({
       'unique-headings': false,
       'important': false,
@@ -40,49 +56,34 @@ gulp.task('cssLint', function() {
 
 // Lint JS
 
-gulp.task('jsHint', function() {
+gulp.task('eslint', function() {
   return gulp.src('src/assets/js/*.js')
-    .pipe(jshint())
-    .pipe(jshint.reporter('default'))
-    .on('error', function(error) {
-      console.error(String(error));
-    });
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failOnError());
 });
-// Not minifying HTML
-// // Minify HTML
-// gulp.task('htmlmin', ['clean'], function() {
-//   return gulp.src('src/*.html')
-//     .pipe(htmlmin({
-//       removeComments: true,
-//       collapseWhitespace: true,
-//       removeAttributeQuotes: true,
-//       removeRedundantAttributes: true,
-//       minifyJS: true,
-//       minifyCSS: true,
-//       minifyURLs: true,
-//       removeOptionalTags: true
-//     }))
-//     .pipe(gulp.dest('build'))
-//     .pipe(notify({ message: 'HTML minification complete' }));
-// });
 
 // Minify CSS
-gulp.task('cssmin', ['clean'], function() {
-  gulp.start('cssmax');
-  gulp.start('fonts');
+gulp.task('cssmin', ['clean', 'cssmax', 'fonts'], function() {
+  // gulp.start('cssmax');
+  // gulp.start('fonts');
   return gulp.src(['src/assets/css/*.css', '!src/assets/css/*.min.css'])
     .pipe(rename({
       suffix: '.min'
+    }))
+    .pipe(autoprefixer({
+      browsers: ['last 2 versions']
     }))
     .pipe(cssmin())
     .pipe(gulp.dest('build/assets/css/'))
     .pipe(notify({
       message: 'CSS minification complete'
-    }));
+    }))
+    .pipe(browserSync.stream());
 });
 
 // Move already-minified assets to build dir
-gulp.task('cssmax', function() {
+gulp.task('cssmax', ['clean'], function() {
   return gulp.src('src/assets/css/*.min.css')
     .pipe(gulp.dest('build/assets/css/'))
     .pipe(notify({
@@ -92,7 +93,7 @@ gulp.task('cssmax', function() {
 
 // Move fonts to build dir
 
-gulp.task('fonts', function() {
+gulp.task('fonts', ['clean'], function() {
   return gulp.src('src/assets/fonts/*')
     .pipe(gulp.dest('build/assets/fonts'))
     .pipe(notify({
@@ -101,9 +102,9 @@ gulp.task('fonts', function() {
 });
 
 // Uglify JS
-gulp.task('uglify', ['clean'], function() {
-  gulp.start('jsmax');
+gulp.task('uglify', ['clean', 'jsmax'], function() {
   return gulp.src(['src/assets/js/*.js', '!src/assets/js/*.min.js'])
+    .pipe(sourcemaps.init())
     .pipe(rename({
       suffix: '.min'
     }))
@@ -111,7 +112,8 @@ gulp.task('uglify', ['clean'], function() {
     .pipe(gulp.dest('build/assets/js'))
     .pipe(notify({
       message: 'JS uglification complete'
-    }));
+    }))
+    .pipe(browserSync.stream());
 });
 
 // Move already-minified assets to build/assets dir
@@ -134,21 +136,20 @@ gulp.task('imagemin', ['clean'], function() {
     }));
 });
 
-gulp.task('htmlmin', ['clean'], function(){
+gulp.task('htmlmin', ['clean'], function() {
   return gulp.src('src/index.html')
     .pipe(gulp.dest('build'))
     .pipe(notify({
-      message: "HTML moved"
+      message: 'HTML moved'
     }));
 });
 
-gulp.task('clean', function(cb) {
-  del(['build'], cb)
+gulp.task('clean', function() {
 });
 
 // Lint all
 gulp.task('lint', function() {
-  gulp.start('htmlLint', 'cssLint', 'jsHint');
+  gulp.start('htmlLint', 'cssLint', 'eslint');
 });
 
 // Minify all
@@ -156,13 +157,13 @@ gulp.task('minify', ['htmlmin', 'cssmin', 'uglify', 'imagemin']);
 
 // Minify, and deploy to GH pages
 gulp.task('build', function() {
-  return gulp.src("./build/**/*")
+  return gulp.src('./build/**/*')
     .pipe(deploy());
 });
 
-gulp.task('watch', function(){
-  gulp.watch(['src/index.html', 'src/assets/css/*.css', '!src/assets/css/*.min.css','src/assets/js/*.js', '!src/assets/js/*.min.js','src/assets/img/**/*.png', 'src/assets/img/**/*.jpg', 'src/assets/img/**/*.svg'], ['minify'])
-})
+// gulp.task('watch', function() {
+//   gulp.watch(['src/index.html', 'src/assets/css/*.css', '!src/assets/css/*.min.css','src/assets/js/*.js', '!src/assets/js/*.min.js','src/assets/img/**/*.png', 'src/assets/img/**/*.jpg', 'src/assets/img/**/*.svg'], ['minify'])
+// })
 
 gulp.task('deploy', ['minify'], function() {
   gulp.start('build');

@@ -1,0 +1,28 @@
+{
+  "env": {
+    //remove either of the lines below if you don't need it
+    //enable nodejs environment
+    "node": 1,
+    //enable browser environment
+    "browser": 1
+  },
+  "globals": {
+    //place settings for globals here, such as
+    "exampleGlobalVariable": true
+  },
+  "rules": {
+    //enable ESLint rules, such as
+    "quotes": [2, "single", "avoid-escape"],
+    "eqeqeq": 0,
+    "brace-style": [2, "stroustrup"],
+    "eol-last": 0,
+    "no-nested-ternary": 1,
+    "padded-blocks": [1, "never"],
+    "space-before-function-paren": [1, "never"],
+    "space-before-blocks": [1, "always"],
+  },
+  "plugins": [
+    //you can put plugins here
+    "one-variable-per-var"
+  ]
+}
