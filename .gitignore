@@ -1,5 +1,5 @@
 .DS_Store
-.eslint
+.eslintrc
 .publish
 node_modules
 build
